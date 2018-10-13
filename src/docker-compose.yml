@@ -1,0 +1,8 @@
+version: '3.4'
+
+services:
+  smartthings2mqtt:
+    image: dr1rrb/smartthings2mqtt
+    build:
+      context: .
+      dockerfile: SmartThings2MQTT/Dockerfile
