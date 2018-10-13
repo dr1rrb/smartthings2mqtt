@@ -24,7 +24,7 @@ docker run -it --name="smartthings2mqtt" -p 1983:1983 -v /docker/smartthings2mqt
 ```
 
 # Configuration
-Add a file _/smartthings2mqtt/json.config_ with content:
+Add a file _/smartthings2mqtt/config.json_ with content:
 ```json
 {
 	"SmartThings": {
