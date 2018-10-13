@@ -38,11 +38,15 @@ namespace SmartThings2MQTT
 #else
 				.SetBasePath("/smartthings2mqtt")
 #endif
-				.AddJsonFile("config.json", optional: false))
+				.AddJsonFile("config.json", optional: false)
+			)
 			.UseSerilog((host, logger) => logger
 				.MinimumLevel.Is(host.Configuration.GetValue<LogEventLevel>("LogLevel"))
 				.WriteTo.Console()
-				.WriteTo.RollingFile("logs\\{Date}.log", LogEventLevel.Information))
+#if !DEBUG
+				.WriteTo.RollingFile("/smartthings2mqtt/logs/{Date}.log", LogEventLevel.Information)
+#endif
+			)
 			.UseStartup<Startup>()
 			.UseUrls("http://0.0.0.0:1983")
 			.Build();
