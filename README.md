@@ -17,8 +17,14 @@ Exposes properties and lets you control your SmartThings devices through MQTT
 1. Select _My Apps/MQTT adapater_
 1. Select all the devices you want to expose to MQTT ans then click _Save_
 
+## Bridge
+The bridge is running in a linux container:
+```
+docker run -it --name="smartthings2mqtt" -p 1983:1983 -v /docker/smartthings2mqtt:/smartthings2mqtt dr1rrb/smartthings2mqtt
+```
+
 # Configuration
-Add a file _/smartthings2mqtt/json.config_ with content:
+Add a file _/smartthings2mqtt/config.json_ with content:
 ```json
 {
 	"SmartThings": {
@@ -66,8 +72,8 @@ You can configure it in the _SmartApp_ settings.
 
 ## Broker section
 ### Host _(Required)_
-The hostname of the broker
-!! Due to a bug in .net core, you cannot use a hostname, but instead you have to put the IP address (https://github.com/dotnet/corefx/issues/24355)
+The hostname of the broker 
+**Due to a bug in .net core, you cannot use a hostname, but instead you have to put the IP address** (https://github.com/dotnet/corefx/issues/24355)
 
 ### Port _(Optional)_
 The port of the broker
