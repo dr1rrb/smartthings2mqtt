@@ -15,13 +15,13 @@
  */
 definition(
 	name: "MQTT adapter",
-	namespace: "torick.net",
+	namespace: "dr1rrb",
 	author: "Dr1rrb",
 	description: "Adapter to expose and control Smartthings devices to/from a MQTT broker.",
 	category: "My Apps",
-	iconUrl: "http://smartthingstostartproxy.azurewebsites.net/Assets/AppLogo.png",
-	iconX2Url: "http://smartthingstostartproxy.azurewebsites.net/Assets/AppLogo@2X.png",
-	iconX3Url: "http://smartthingstostartproxy.azurewebsites.net/Assets/AppLogo@3X.png",
+	iconUrl: "http://mqtt.org/new/wp-content/uploads/2011/08/mqttorg-glow.png",
+	iconX2Url: "http://mqtt.org/new/wp-content/uploads/2011/08/mqttorg-glow.png",
+	iconX3Url: "http://mqtt.org/new/wp-content/uploads/2011/08/mqttorg-glow.png",
 	oauth: true)
 
 
