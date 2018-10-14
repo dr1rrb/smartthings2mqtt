@@ -40,6 +40,7 @@ namespace SmartThings2MQTT
 					.Add<BridgeConfig>("Bridge"))
 				.AddSingleton<MqttService>(svc => new MqttService(
 					svc.GetService<MqttBrokerConfig>(),
+					svc.GetService<BridgeConfig>().TopicNamespace + "/bridge/state",
 					scheduler))
 				.AddSingleton<EndpointsManager>(svc => new EndpointsManager(
 					svc.GetService<BridgeConfig>().BridgeToStAuthToken, 

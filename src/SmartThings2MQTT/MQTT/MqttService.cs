@@ -22,6 +22,7 @@ namespace SmartThings2MQTT.MQTT
 	{
 		private readonly MqttClient _client;
 		private readonly MqttBrokerConfig _broker;
+		private readonly string _stateTopic;
 		private readonly IScheduler _messageLoopScheduler;
 		private readonly IObservable<MqttMessage> _messages;
 
@@ -29,10 +30,11 @@ namespace SmartThings2MQTT.MQTT
 
 		private ImmutableHashSet<string> _subscribedTopics = ImmutableHashSet<string>.Empty;
 
-		public MqttService(MqttBrokerConfig broker, IScheduler messageLoopScheduler)
+		public MqttService(MqttBrokerConfig broker, string stateTopic, IScheduler messageLoopScheduler)
 		{
 			_client = new MqttClient(broker.Host, broker.Port, false, null, null, MqttSslProtocols.None);
 			_broker = broker;
+			_stateTopic = stateTopic;
 			_messageLoopScheduler = messageLoopScheduler;
 
 			_messages = Observable
@@ -131,7 +133,19 @@ namespace SmartThings2MQTT.MQTT
 		{
 			if (!_client.IsConnected)
 			{
-				_client.Connect(_broker.ClientId, _broker.Username, _broker.Password);
+				_client.Connect(
+					_broker.ClientId, 
+					_broker.Username, 
+					_broker.Password,
+					willRetain: true,
+					willQosLevel: (byte)QualityOfService.AtLeastOnce,
+					willFlag: true,
+					willTopic: _stateTopic,
+					willMessage: "offline",
+					cleanSession: false,
+					keepAlivePeriod: 10);
+				// Birth
+				_client.Publish(_stateTopic, Encoding.UTF8.GetBytes("online"), (byte) QualityOfService.AtLeastOnce, retain: true);
 			}
 		}
 
