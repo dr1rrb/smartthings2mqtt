@@ -121,6 +121,8 @@ def updateDevice() {
 // Region: ST to MQTT
 def initDeviceStatus(device)
 {
+	log.debug "Init ${device}"
+
 	try {
 		def request = [
 			uri: "${bridgeUri}/api/smartthings",
@@ -139,6 +141,8 @@ def initDeviceStatus(device)
 
 def forwardDeviceStatus(eventArgs)
 {
+	log.debug "Forwarding ${eventArgs.name}"
+
 	try {
 		def request = [
 			uri: "${bridgeUri}/api/smartthings",
@@ -189,7 +193,7 @@ def getDeviceInfos(device, details = false)
 	def infos = [
 		id: device.id,
 		name: device.displayName,
-		properties: device.supportedAttributes.collectEntries { attr -> [ (attr.name): device.currentValue(attr.name) ] }
+		properties: device.supportedAttributes.collectEntries { attr -> [ (attr.name): device.currentValue(attr.name).toString() ] }
 	]
 	
 	if (details)
