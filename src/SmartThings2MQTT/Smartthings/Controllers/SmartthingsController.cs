@@ -36,7 +36,21 @@ namespace SmartThings2MQTT.Smartthings.Controllers
 				return;
 			}
 
-			await _mqtt.Update(ct, request.Device);
+			switch (request.Kind)
+			{
+				case SmartthingsToMqttRequestKind.Device:
+					await _mqtt.Update(ct, request.Device);
+					break;
+
+				case SmartthingsToMqttRequestKind.Routine:
+				await _mqtt.Execute(ct, request.Routine, request.Event.Date);
+					break;
+
+				default:
+					throw new ArgumentOutOfRangeException( nameof(request.Kind), "Unknown kind: " + request.Kind);
+			}
+
+			
 		}
 	}
 }

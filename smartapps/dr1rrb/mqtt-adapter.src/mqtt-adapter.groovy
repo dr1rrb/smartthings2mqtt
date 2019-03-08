@@ -79,6 +79,10 @@ def refresh() {
 		}
 		initDeviceStatus(device)
 	}
+    
+    subscribe(location, "routineExecuted", forwardRoutine)
+    
+    log.debug "Subscriptions refreshed!"
 }
 
 // Region: MQTT to ST
@@ -128,6 +132,7 @@ def initDeviceStatus(device)
 			uri: "${bridgeUri}/api/smartthings",
 			headers: [Authorization: "Bearer ${bridgeAuth}"],
 			body: [
+            	kind: "device",
 				device: getDeviceInfos(device)
 			]
 		]
@@ -141,14 +146,43 @@ def initDeviceStatus(device)
 
 def forwardDeviceStatus(eventArgs)
 {
-	log.debug "Forwarding ${eventArgs.name}"
+	log.debug "Forwarding ${eventArgs.name}: ${eventArgs.value}"
 
 	try {
 		def request = [
 			uri: "${bridgeUri}/api/smartthings",
 			headers: [Authorization: "Bearer ${bridgeAuth}"],
 			body: [
+            	kind: "device",
 				device: getDeviceInfos(eventArgs.device),
+				event: [
+					date: eventArgs.isoDate, 
+					value: eventArgs.value,
+					name: eventArgs.name,
+				]
+			]
+		]
+        
+		httpPostJson(request) { resp -> log.debug "response: ${resp.status}." }
+		
+	} catch (e) {
+		log.error "Failed to forward event: ${eventArgs.name}"
+	}
+}
+
+def forwardRoutine(eventArgs)
+{
+    log.debug "Forwarding routine ${eventArgs.value}"
+
+	try {
+		def request = [
+			uri: "${bridgeUri}/api/smartthings",
+			headers: [Authorization: "Bearer ${bridgeAuth}"],
+			body: [
+            	kind: "routine",
+                routine: [
+                	id: eventArgs.value
+                ],
 				event: [
 					date: eventArgs.isoDate, 
 					value: eventArgs.value,
@@ -160,7 +194,7 @@ def forwardDeviceStatus(eventArgs)
 		httpPostJson(request) { resp -> log.debug "response: ${resp.status}." }
 		
 	} catch (e) {
-		log.error "Failed to forward event: ${e}"
+		log.error "Failed to forward routine event: ${eventArgs.name}"
 	}
 }
 

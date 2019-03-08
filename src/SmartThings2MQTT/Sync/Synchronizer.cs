@@ -71,6 +71,17 @@ namespace SmartThings2MQTT.Sync
 			}
 		}
 
+		public async Task Execute(CancellationToken ct, Routine routine, string date)
+		{
+			var topic = $"{_mqttConfig.TopicNamespace}/routine/{routine.Id.ToLowerInvariant()}";
+
+			this.Log().Info($"[ST => MQTT] Executing routine: {topic} ({date})");
+
+			await _mqtt.Publish(ct, topic, date, QualityOfService.ExcatlyOnce, retain: false);
+
+			this.Log().Info($"[ST => MQTT] Executed routine: {topic} ({date})");
+		}
+
 		/// <summary>
 		/// Updates MQTT broker from a ST device
 		/// </summary>
@@ -89,8 +100,10 @@ namespace SmartThings2MQTT.Sync
 						var value = hasValue
 							? property.Value.ToLowerInvariant()
 							: null;
+						// Ugly hack to not retain button pressed events
+						var retain = !property.Key.Equals("button", StringComparison.OrdinalIgnoreCase);
 
-						return (device: device, topic: topic, hasValue: hasValue, value: value);
+						return (device: device, topic: topic, hasValue: hasValue, value: value, retain: retain);
 					}))
 				.Where(message => message.hasValue)
 				.ToArray();
@@ -102,7 +115,7 @@ namespace SmartThings2MQTT.Sync
 					this.Log().Info($"[ST => MQTT] Sending ({message.device.Name}): {message.topic} = {message.value}");
 				}
 
-				var sent = await _mqtt.Publish(ct, messages.Select(message => (topic: message.topic, value: message.value)).ToArray());
+				var sent = await _mqtt.Publish(ct, messages.Select(message => (topic: message.topic, value: message.value, retain: message.retain)).ToArray());
 
 				foreach (var message in sent)
 				{

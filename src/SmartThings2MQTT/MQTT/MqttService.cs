@@ -60,7 +60,7 @@ namespace SmartThings2MQTT.MQTT
 		/// <param name="ct">Cancellation token to abort operation</param>
 		/// <param name="topic">Topic of the message to publish</param>
 		/// <param name="value">Data of the message to publish</param>
-		/// <param name="qos">The qulity of service associted to the message</param>
+		/// <param name="qos">The quality of service  to the message</param>
 		/// <param name="retain">A boolean which indicates if the broker should retain the message of not (cf. remark)</param>
 		/// <remarks>
 		/// A retained message is a normal MQTT message with the <paramref name="retain"/> flag set to true.
@@ -77,7 +77,7 @@ namespace SmartThings2MQTT.MQTT
 		/// </summary>
 		/// <param name="ct">Cancellation token to abort operation</param>
 		/// <param name="messages">Messages to publish</param>
-		/// <param name="qos">The qulity of service associted to the message</param>
+		/// <param name="qos">The quality of service  to the message</param>
 		/// <param name="retain">A boolean which indicates if the broker should retain the message of not (cf. remark)</param>
 		/// <remarks>
 		/// A retained message is a normal MQTT message with the <paramref name="retain"/> flag set to true.
@@ -86,20 +86,36 @@ namespace SmartThings2MQTT.MQTT
 		/// message immediately after they subscribe. The broker stores only one retained message per topic.
 		/// </remarks>
 		/// <returns></returns>
-		public Task<(string topic, string value)[]> Publish(CancellationToken ct, (string topic, string value)[] messages, QualityOfService qos = QualityOfService.AtLeastOnce, bool retain = true)
+		public Task<(string topic, string value, bool retain)[]> Publish(CancellationToken ct, (string topic, string value)[] messages, QualityOfService qos = QualityOfService.AtLeastOnce, bool retain = true)
+			=> Publish(ct, messages.Select(msg => (msg.topic, msg.value, retain)).ToArray(), qos);
+
+		/// <summary>
+		/// Asynchronously publishes some messages
+		/// </summary>
+		/// <param name="ct">Cancellation token to abort operation</param>
+		/// <param name="messages">Messages to publish</param>
+		/// <param name="qos">The quality of service associated to the message</param>
+		/// <remarks>
+		/// A retained message is a normal MQTT message with the <paramref name="retain"/> flag set to true.
+		/// The broker stores the last retained message and the corresponding QoS for that topic.
+		/// Each client that subscribes to a topic pattern that matches the topic of the retained message receives the retained
+		/// message immediately after they subscribe. The broker stores only one retained message per topic.
+		/// </remarks>
+		/// <returns></returns>
+		public Task<(string topic, string value, bool retain)[]> Publish(CancellationToken ct, (string topic, string value, bool retain)[] messages, QualityOfService qos = QualityOfService.AtLeastOnce)
 			=> _messageLoopScheduler.Run(ct, () =>
 			{
 				EnsureConnected();
 
 				return Send().ToArray();
 
-				IEnumerable<(string topic, string value)> Send()
+				IEnumerable<(string topic, string value, bool retain)> Send()
 				{
 					foreach (var message in messages)
 					{
 						if (_cache.Update(message.topic, message.value))
 						{
-							_client.Publish(message.topic, Encoding.UTF8.GetBytes(message.value), (byte) qos, retain);
+							_client.Publish(message.topic, Encoding.UTF8.GetBytes(message.value), (byte)qos, message.retain);
 							yield return message;
 						}
 					}
